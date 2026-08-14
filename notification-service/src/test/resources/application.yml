@@ -1,0 +1,36 @@
+spring:
+  config:
+    import: optional:configserver:disabled  # 테스트에서는 Config Server 미사용 (optional이라 실패해도 무시됨)
+  datasource:
+    url: jdbc:h2:mem:notificationdb-test;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  kafka:
+    bootstrap-servers: ${spring.embedded.kafka.brokers}
+    consumer:
+      group-id: notification-service-group-test
+      auto-offset-reset: earliest
+      properties:
+        schema.registry.url: mock://test-scope
+        specific.avro.reader: true
+
+kafka:
+  topic:
+    transaction-events: fin.transaction.events.test
+
+eureka:
+  client:
+    enabled: false
+    register-with-eureka: false
+    fetch-registry: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

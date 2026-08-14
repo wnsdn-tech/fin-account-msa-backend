@@ -1,18 +1,52 @@
-# virtual machine crash logs
-# see http://www.java.com/en/download/help/error_hotspot.xml
+# Compiled class files
+*.class
+
+# Package files
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Maven / Gradle build output
+target/
+build/
+out/
+
+# Log files
+*.log
+logs/
+
+# JVM crash logs
 hs_err_pid*
 replay_pid*
 
 # IntelliJ IDEA
 .idea/
 *.iml
+*.ipr
+*.iws
 
-### Avro generated sources ###
-**/src/main/java/com/finaccounthub/avro/
+# Eclipse / STS
+.classpath
+.project
+.settings/
+.factorypath
+.springBeans
+.sts4-cache/
+.apt_generated/
 
-### OS ###
+# VS Code
+.vscode/
+
+# OS files
 .DS_Store
 Thumbs.db
 
-### Docker volumes (local) ###
+# Locally generated Docker data
 docker-data/
+
+# Avro-generated Java source
+**/src/main/java/com/finaccounthub/avro/

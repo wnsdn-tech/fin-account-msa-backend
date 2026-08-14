@@ -1,0 +1,98 @@
+version: '3.8'
+
+# Fin-Account Hub — 담당 파트 전용 스택 (Notification Service / Kafka / Schema Registry)
+# 이 리포지토리는 팀 프로젝트 중 아래 3개 담당 영역만 포함합니다.
+# 나머지 서비스(discovery/config/gateway/account/transaction)는 팀원 리포지토리 참고.
+# 기동 순서: kafka -> schema-registry -> notification-service
+
+services:
+  # ---------------------------------------------------------------
+  # Kafka (KRaft 모드, Zookeeper 불필요, 단일 노드)
+  # ---------------------------------------------------------------
+  kafka:
+    image: confluentinc/cp-kafka:7.6.1
+    container_name: fin-kafka
+    hostname: kafka
+    ports:
+      - "29092:29092"   # 호스트에서 접속용
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://kafka:9092,CONTROLLER://kafka:9093,PLAINTEXT_HOST://0.0.0.0:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      CLUSTER_ID: "mOS8beCYQmOoDVwrzVVf9A"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "kafka:9092"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+
+  # ---------------------------------------------------------------
+  # Confluent Schema Registry — 핵심 차별화 기술
+  # ---------------------------------------------------------------
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.6.1
+    container_name: fin-schema-registry
+    hostname: schema-registry
+    depends_on:
+      kafka:
+        condition: service_healthy
+    ports:
+      - "8091:8081"   # 호스트 8091 -> 컨테이너 8081 (account-service와 포트 충돌 회피)
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka:9092
+      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+      SCHEMA_REGISTRY_KAFKASTORE_TOPIC: _schemas
+      SCHEMA_REGISTRY_SCHEMA_COMPATIBILITY_LEVEL: BACKWARD
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/subjects"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+
+  # 선택: Kafka 토픽/메시지 확인용 웹 UI
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: fin-kafka-ui
+    depends_on:
+      - kafka
+      - schema-registry
+    ports:
+      - "8090:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: fin-account-hub
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_SCHEMAREGISTRY: http://schema-registry:8081
+
+  # ---------------------------------------------------------------
+  # 담당 서비스: notification-service
+  # (discovery/config-service는 이 리포지토리에 없으므로 depends_on/EUREKA_URI 미설정.
+  #  spring.config.import는 optional이라 config-service 미기동 시에도 정상 구동됨)
+  # ---------------------------------------------------------------
+  notification-service:
+    build: ./notification-service
+    container_name: fin-notification
+    depends_on:
+      kafka:
+        condition: service_healthy
+      schema-registry:
+        condition: service_healthy
+    ports:
+      - "8085:8085"
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SCHEMA_REGISTRY_URL: http://schema-registry:8081
+
+volumes:
+  kafka-data:

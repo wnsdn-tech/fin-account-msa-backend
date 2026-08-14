@@ -7,14 +7,18 @@
 
     <groupId>com.finaccount</groupId>
     <artifactId>fin-account-msa-backend</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
+
+    <name>fin-account-msa-backend</name>
+    <description>Fin Account MSA Backend</description>
 
     <modules>
         <module>config-server</module>
         <module>eureka-server</module>
         <module>gateway</module>
+        <module>account-service</module>
+        <module>notification-service</module>
     </modules>
 
 </project>
