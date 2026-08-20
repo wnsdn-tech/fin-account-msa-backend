@@ -45,7 +45,7 @@ public class NotificationEntity {
     private Integer toAccountId;
 
     @Column(nullable = false)
-    private LocalDateTime receivedAt;
+    private LocalDateTime createdAt;
 
     protected NotificationEntity() {
         // JPA
@@ -54,7 +54,7 @@ public class NotificationEntity {
     public NotificationEntity(Integer transactionId, String ownerName,
                                String transactionType, Long amount, String message,
                                String status, Integer fromAccountId, Integer toAccountId,
-                               LocalDateTime receivedAt) {
+                               LocalDateTime createdAt) {
         this.transactionId = transactionId;
         this.ownerName = ownerName;
         this.transactionType = transactionType;
@@ -63,7 +63,7 @@ public class NotificationEntity {
         this.status = status;
         this.fromAccountId = fromAccountId;
         this.toAccountId = toAccountId;
-        this.receivedAt = receivedAt;
+        this.createdAt = createdAt;
     }
 
     public Long getId() {
@@ -102,7 +102,7 @@ public class NotificationEntity {
         return toAccountId;
     }
 
-    public LocalDateTime getReceivedAt() {
-        return receivedAt;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 }

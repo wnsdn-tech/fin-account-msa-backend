@@ -210,7 +210,7 @@ public class TransactionService {
     private void sendNotification(TransactionDto transaction) {
         TransactionEvent.Builder builder = TransactionEvent.newBuilder();
         builder.setTransactionId(transaction.getTransactionId());
-        builder.setOwnerName(""); // TODO
+        builder.setOwnerName(getOwnerNameForNotification(transaction)); // TODO
         builder.setTransactionType(transaction.getType().toString());
         builder.setAmount(transaction.getAmount());
         builder.setCreatedAt(transaction.getCreatedAt().toString());
@@ -223,5 +223,28 @@ public class TransactionService {
 
         CircuitBreaker circuitBreaker = circuitBreakerFactory.create("notification-service");
         circuitBreaker.run(() -> kafkaProducer.send(record), throwable -> null);
+    }
+
+    private String getOwnerNameForNotification(TransactionDto transaction) {
+        Integer accountId = getAccountIdForNotification(transaction);
+
+        CircuitBreaker circuitBreaker = circuitBreakerFactory.create("account-service");
+
+        AccountResponse response = circuitBreaker.run(
+                () -> accountService.getAccount(accountId),
+                throwable -> {
+                    throw new IllegalStateException();
+                }
+        );
+
+        return response.getOwnerName();
+    }
+
+    private Integer getAccountIdForNotification(TransactionDto transaction) {
+        return switch (transaction.getType()) {
+            case DEPOSIT -> transaction.getToAccountId();
+            case WITHDRAW -> transaction.getFromAccountId();
+            case TRANSFER -> transaction.getFromAccountId();
+        };
     }
 }

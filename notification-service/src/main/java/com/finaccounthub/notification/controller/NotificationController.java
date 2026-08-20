@@ -31,12 +31,12 @@ public class NotificationController {
     /** 전체 알림 로그 조회 (최신순) */
     @GetMapping("/notifications")
     public List<NotificationEntity> getAllNotifications() {
-        return notificationRepository.findAllByOrderByReceivedAtDesc();
+        return notificationRepository.findAllByOrderByCreatedAtDesc();
     }
 
     /** 사용자별 알림 로그 조회 (최신순) */
     @GetMapping("/notifications/{ownerName}")
     public List<NotificationEntity> getNotificationsByUser(@PathVariable String ownerName) {
-        return notificationRepository.findByOwnerNameOrderByReceivedAtDesc(ownerName);
+        return notificationRepository.findByOwnerNameOrderByCreatedAtDesc(ownerName);
     }
 }

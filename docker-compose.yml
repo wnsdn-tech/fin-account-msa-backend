@@ -30,7 +30,7 @@ services:
     container_name: config-service
 
   account-service:
-    image: uniquecolor/account-service:1.0.0
+    image: uniquecolor/account-service:1.0.1
     build: ./account-service
     container_name: account-service
     environment:
@@ -38,7 +38,7 @@ services:
       - spring.datasource.url=jdbc:mariadb://mariadb-account-service:3306/appdb
 
   transaction-service:
-    image: uniquecolor/transaction-service:1.0.0
+    image: uniquecolor/transaction-service:1.0.1
     build: ./transaction-service
     container_name: transaction-service
     depends_on:
@@ -53,7 +53,7 @@ services:
       - spring.datasource.url=jdbc:mariadb://mariadb-transaction-service:3306/appdb
 
   notification-service:
-    image: uniquecolor/notification-service:1.0.0
+    image: uniquecolor/notification-service:1.0.1
     build: ./notification-service
     container_name: notification-service
     depends_on:

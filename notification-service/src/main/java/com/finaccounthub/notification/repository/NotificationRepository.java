@@ -7,9 +7,9 @@ import java.util.List;
 
 public interface NotificationRepository extends JpaRepository<NotificationEntity, Long> {
 
-    List<NotificationEntity> findByOwnerNameOrderByReceivedAtDesc(String ownerName);
+    List<NotificationEntity> findByOwnerNameOrderByCreatedAtDesc(String ownerName);
 
-    List<NotificationEntity> findAllByOrderByReceivedAtDesc();
+    List<NotificationEntity> findAllByOrderByCreatedAtDesc();
 
     boolean existsByTransactionId(Integer transactionId);
 }

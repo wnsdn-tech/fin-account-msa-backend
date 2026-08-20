@@ -142,7 +142,7 @@ class NotificationServiceIntegrationTest {
 
         // Consumer가 두 메시지를 모두 처리할 시간을 준 뒤 저장 건수가 1건인지 확인
         await().pollDelay(2, TimeUnit.SECONDS).atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
-            long count = notificationRepository.findAllByOrderByReceivedAtDesc().stream()
+            long count = notificationRepository.findAllByOrderByCreatedAtDesc().stream()
                     .filter(n -> n.getTransactionId().equals(transactionId))
                     .count();
             assertThat(count).isEqualTo(1);
@@ -162,7 +162,7 @@ class NotificationServiceIntegrationTest {
                 assertThat(notificationRepository.existsByTransactionId(transactionId)).isTrue()
         );
 
-        NotificationEntity saved = notificationRepository.findAllByOrderByReceivedAtDesc().stream()
+        NotificationEntity saved = notificationRepository.findAllByOrderByCreatedAtDesc().stream()
                 .filter(n -> n.getTransactionId().equals(transactionId))
                 .findFirst()
                 .orElseThrow();
