@@ -4,8 +4,8 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
-import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -16,7 +16,7 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 
 @Component
-public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
+public class JwtAuthenticationFilter implements GatewayFilter, Ordered {
 
     private final SecretKey secretKey;
 
@@ -33,15 +33,6 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
             ServerWebExchange exchange,
             GatewayFilterChain chain
     ) {
-        String path = exchange.getRequest()
-                .getURI()
-                .getPath();
-
-        // 로그인은 JWT 검사하지 않음
-        if (path.equals("/auth/login")) {
-            return chain.filter(exchange);
-        }
-
         String authorization = exchange.getRequest()
                 .getHeaders()
                 .getFirst("Authorization");
@@ -67,7 +58,6 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
             return chain.filter(exchange);
 
         } catch (Exception e) {
-
             exchange.getResponse()
                     .setStatusCode(HttpStatus.UNAUTHORIZED);
 
