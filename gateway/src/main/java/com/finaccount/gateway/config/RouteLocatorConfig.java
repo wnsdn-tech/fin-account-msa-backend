@@ -11,12 +11,7 @@ public class RouteLocatorConfig {
     public RouteLocator getRouteLocator(RouteLocatorBuilder builder) {
         return builder.routes()
                 .route("account-service-login", route -> route
-                        .path("/auth/login/**")
-                        .filters(filter -> filter
-                                .rewritePath(
-                                        "/auth/(?<segment>.*)",
-                                        "/${segment}"
-                                ))
+                        .path("/auth/login")
                         .uri("lb://ACCOUNT-SERVICE")
                 )
                 .route("account-service-h2console", route -> route

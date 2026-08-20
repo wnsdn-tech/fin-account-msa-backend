@@ -11,6 +11,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.NoSuchElementException;
+import com.finaccount.accountservice.vo.LoginRequest;
+import com.finaccount.accountservice.vo.LoginResponse;
+import jakarta.validation.Valid;
 
 @RestController
 public class AccountController {
@@ -18,6 +21,15 @@ public class AccountController {
 
     public AccountController(AccountService service) {
         this.service = service;
+    }
+
+    @PostMapping("/auth/login")
+    public ResponseEntity<LoginResponse> login(
+            @RequestBody @Valid LoginRequest request
+    ) {
+        LoginResponse response = service.login(request);
+
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/accounts")
