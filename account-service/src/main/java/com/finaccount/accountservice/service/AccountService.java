@@ -15,15 +15,25 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import com.finaccount.accountservice.security.JwtProvider;
+import com.finaccount.accountservice.vo.LoginRequest;
+import com.finaccount.accountservice.vo.LoginResponse;
+import org.springframework.security.authentication.BadCredentialsException;
 
 @Service
 public class AccountService implements UserDetailsService {
     private final AccountRepository repository;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final JwtProvider jwtProvider;
 
-    public AccountService(AccountRepository repository, BCryptPasswordEncoder passwordEncoder) {
+    public AccountService(
+            AccountRepository repository,
+            BCryptPasswordEncoder passwordEncoder,
+            JwtProvider jwtProvider
+    ) {
         this.repository = repository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtProvider = jwtProvider;
     }
 
     public AccountDto createAccount(AccountDto dto) {
@@ -79,6 +89,30 @@ public class AccountService implements UserDetailsService {
         }
     }
 
+    public LoginResponse login(LoginRequest request) {
+
+        UserDetails userDetails =
+                loadUserByUsername(request.getAccountNumber());
+
+        if (!passwordEncoder.matches(
+                request.getPassword(),
+                userDetails.getPassword()
+        )) {
+            throw new BadCredentialsException("Invalid password");
+        }
+
+        String accessToken =
+                jwtProvider.generateToken(request.getAccountNumber());
+
+        AccountDto account =
+                getAccountByAccountNumber(request.getAccountNumber());
+
+        LoginResponse response = new LoginResponse();
+        response.setAccountId(account.getAccountId());
+        response.setAccessToken(accessToken);
+
+        return response;
+    }
     public AccountDto updateAccount(Integer accountId, AccountDto dto) throws NoSuchElementException {
         AccountEntity entity = repository.findById(accountId).orElseThrow();
 
